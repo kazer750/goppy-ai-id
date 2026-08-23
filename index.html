@@ -1,0 +1,1865 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Goppy AI - Asisten AI Cerdas</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+  <style>
+    :root {
+      --bg-primary: #0f0f13;
+      --bg-secondary: #1a1a24;
+      --bg-tertiary: #252532;
+      --bg-hover: #2e2e3d;
+      --accent: #7c5cff;
+      --accent-hover: #6a4de0;
+      --accent-glow: rgba(124, 92, 255, 0.3);
+      --text-primary: #f0f0f5;
+      --text-secondary: #a0a0b0;
+      --text-muted: #6b6b7b;
+      --border: #2a2a3a;
+      --success: #22c55e;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --radius: 12px;
+      --radius-sm: 8px;
+      --shadow: 0 4px 24px rgba(0,0,0,0.4);
+      --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ========== AUTH SCREEN ========== */
+    #auth-screen {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f0f13 0%, #1a1030 50%, #0f0f13 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    #auth-screen::before {
+      content: '';
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+      top: -200px;
+      right: -200px;
+      pointer-events: none;
+    }
+
+    .auth-container {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 40px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: var(--shadow);
+      position: relative;
+      z-index: 1;
+    }
+
+    .auth-logo {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .auth-logo .icon {
+      font-size: 56px;
+      margin-bottom: 8px;
+    }
+
+    .auth-logo h1 {
+      font-size: 28px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #a78bfa, #7c5cff, #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .auth-logo p {
+      color: var(--text-secondary);
+      font-size: 14px;
+      margin-top: 4px;
+    }
+
+    .auth-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      background: var(--bg-tertiary);
+      padding: 4px;
+      border-radius: var(--radius-sm);
+    }
+
+    .auth-tab {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .auth-tab.active {
+      background: var(--accent);
+      color: white;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px 14px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-group input:focus {
+      border-color: var(--accent);
+    }
+
+    .auth-btn {
+      width: 100%;
+      padding: 13px;
+      background: var(--accent);
+      border: none;
+      border-radius: var(--radius-sm);
+      color: white;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      margin-top: 8px;
+    }
+
+    .auth-btn:hover {
+      background: var(--accent-hover);
+    }
+
+    .auth-btn:active {
+      transform: scale(0.98);
+    }
+
+    .auth-error {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid var(--danger);
+      color: #fca5a5;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .auth-hint {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* ========== MAIN APP ========== */
+    #app {
+      display: none;
+      height: 100vh;
+      flex-direction: column;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      height: 60px;
+      flex-shrink: 0;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .menu-btn {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 22px;
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 6px;
+      display: none;
+    }
+
+    .menu-btn:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    .logo-text {
+      font-size: 18px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #a78bfa, #7c5cff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .user-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-tertiary);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+    }
+
+    .user-badge .avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+
+    .header-btn {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+
+    .header-btn:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    /* Layout */
+    .main-layout {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 280px;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      transition: transform 0.3s;
+    }
+
+    .sidebar-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .new-chat-btn {
+      width: 100%;
+      padding: 12px;
+      background: var(--accent);
+      border: none;
+      border-radius: var(--radius-sm);
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.2s;
+    }
+
+    .new-chat-btn:hover {
+      background: var(--accent-hover);
+    }
+
+    .mode-selector {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .mode-selector label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .mode-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+
+    .mode-btn {
+      padding: 8px 6px;
+      background: var(--bg-tertiary);
+      border: 1px solid transparent;
+      border-radius: 6px;
+      color: var(--text-secondary);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .mode-btn:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    .mode-btn.active {
+      background: rgba(124, 92, 255, 0.2);
+      border-color: var(--accent);
+      color: #c4b5fd;
+    }
+
+    .history-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+    }
+
+    .history-list h3 {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+      padding: 0 4px;
+    }
+
+    .history-item {
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 2px;
+      transition: background 0.15s;
+    }
+
+    .history-item:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    .history-item.active {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+
+    .history-item .title {
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .history-item .delete-btn {
+      opacity: 0;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 14px;
+      padding: 2px;
+    }
+
+    .history-item:hover .delete-btn {
+      opacity: 1;
+    }
+
+    .history-item .delete-btn:hover {
+      color: var(--danger);
+    }
+
+    .sidebar-footer {
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .sidebar-footer button {
+      width: 100%;
+      padding: 10px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-secondary);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .sidebar-footer button:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    /* Chat Area */
+    .chat-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--bg-primary);
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      scroll-behavior: smooth;
+    }
+
+    .welcome-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .welcome-screen .big-icon {
+      font-size: 64px;
+      margin-bottom: 16px;
+    }
+
+    .welcome-screen h2 {
+      font-size: 28px;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #a78bfa, #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .welcome-screen p {
+      color: var(--text-secondary);
+      max-width: 480px;
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
+
+    .suggestion-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      max-width: 700px;
+      width: 100%;
+    }
+
+    .suggestion-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s;
+    }
+
+    .suggestion-card:hover {
+      border-color: var(--accent);
+      background: var(--bg-tertiary);
+      transform: translateY(-2px);
+    }
+
+    .suggestion-card .icon {
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+
+    .suggestion-card .title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .suggestion-card .desc {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Message bubbles */
+    .message {
+      display: flex;
+      gap: 14px;
+      margin-bottom: 28px;
+      max-width: 860px;
+      margin-left: auto;
+      margin-right: auto;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .message.user .avatar {
+      background: var(--accent);
+    }
+
+    .message.assistant .avatar {
+      background: linear-gradient(135deg, #7c5cff, #60a5fa);
+    }
+
+    .message .content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .message .role-name {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--text-secondary);
+    }
+
+    .message .bubble {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 18px;
+      line-height: 1.65;
+      font-size: 15px;
+    }
+
+    .message.user .bubble {
+      background: rgba(124, 92, 255, 0.15);
+      border-color: rgba(124, 92, 255, 0.3);
+    }
+
+    .message .bubble p {
+      margin-bottom: 10px;
+    }
+
+    .message .bubble p:last-child {
+      margin-bottom: 0;
+    }
+
+    .message .bubble pre {
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      overflow-x: auto;
+      margin: 12px 0;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .message .bubble code {
+      font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+      font-size: 0.9em;
+    }
+
+    .message .bubble :not(pre) > code {
+      background: var(--bg-tertiary);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.88em;
+    }
+
+    .message .bubble ul, .message .bubble ol {
+      margin: 10px 0;
+      padding-left: 24px;
+    }
+
+    .message .bubble li {
+      margin-bottom: 4px;
+    }
+
+    .message .bubble table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 12px 0;
+    }
+
+    .message .bubble th, .message .bubble td {
+      border: 1px solid var(--border);
+      padding: 8px 12px;
+      text-align: left;
+    }
+
+    .message .bubble th {
+      background: var(--bg-tertiary);
+    }
+
+    .message-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .message:hover .message-actions {
+      opacity: 1;
+    }
+
+    .msg-action-btn {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .msg-action-btn:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    /* Typing indicator */
+    .typing-indicator {
+      display: flex;
+      gap: 5px;
+      padding: 8px 0;
+    }
+
+    .typing-indicator span {
+      width: 8px;
+      height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: bounce 1.4s infinite ease-in-out both;
+    }
+
+    .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+    .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+
+    @keyframes bounce {
+      0%, 80%, 100% { transform: scale(0); }
+      40% { transform: scale(1); }
+    }
+
+    /* Input Area */
+    .input-area {
+      padding: 16px 24px 24px;
+      background: var(--bg-primary);
+      border-top: 1px solid var(--border);
+    }
+
+    .input-wrapper {
+      max-width: 860px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .input-box {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 12px 14px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .input-box:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .input-box textarea {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-primary);
+      font-size: 15px;
+      font-family: var(--font);
+      resize: none;
+      max-height: 160px;
+      line-height: 1.5;
+      padding: 4px 0;
+    }
+
+    .input-box textarea::placeholder {
+      color: var(--text-muted);
+    }
+
+    .send-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--accent);
+      border: none;
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, transform 0.1s;
+      flex-shrink: 0;
+    }
+
+    .send-btn:hover {
+      background: var(--accent-hover);
+    }
+
+    .send-btn:disabled {
+      background: var(--bg-tertiary);
+      color: var(--text-muted);
+      cursor: not-allowed;
+    }
+
+    .send-btn:active:not(:disabled) {
+      transform: scale(0.95);
+    }
+
+    .input-hint {
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 10px;
+    }
+
+    /* Owner Panel Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-overlay.show {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      width: 90%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-header h3 {
+      font-size: 17px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 22px;
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    .modal-close:hover {
+      color: var(--text-primary);
+    }
+
+    .modal-body {
+      padding: 20px;
+    }
+
+    .modal-body .form-group {
+      margin-bottom: 18px;
+    }
+
+    .api-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+
+    .api-status.ok {
+      background: rgba(34, 197, 94, 0.15);
+      border: 1px solid var(--success);
+      color: #86efac;
+    }
+
+    .api-status.missing {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid var(--warning);
+      color: #fcd34d;
+    }
+
+    .modal-footer {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    .btn {
+      padding: 10px 18px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+    }
+
+    .btn-secondary {
+      background: var(--bg-tertiary);
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.15);
+      color: #fca5a5;
+      border: 1px solid var(--danger);
+    }
+
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, 0.25);
+    }
+
+    /* Settings Modal extras */
+    .settings-section {
+      margin-bottom: 24px;
+    }
+
+    .settings-section h4 {
+      font-size: 14px;
+      margin-bottom: 12px;
+      color: var(--text-secondary);
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-size: 14px;
+      z-index: 2000;
+      opacity: 0;
+      transition: all 0.3s;
+      box-shadow: var(--shadow);
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .menu-btn {
+        display: block;
+      }
+
+      .sidebar {
+        position: fixed;
+        left: 0;
+        top: 60px;
+        bottom: 0;
+        z-index: 100;
+        transform: translateX(-100%);
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .sidebar-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        top: 60px;
+        background: rgba(0,0,0,0.5);
+        z-index: 99;
+      }
+
+      .sidebar-overlay.show {
+        display: block;
+      }
+
+      .suggestion-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .chat-messages {
+        padding: 16px;
+      }
+
+      .input-area {
+        padding: 12px 16px 16px;
+      }
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--bg-hover);
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <!-- ========== AUTH SCREEN ========== -->
+  <div id="auth-screen">
+    <div class="auth-container">
+      <div class="auth-logo">
+        <div class="icon">🤖</div>
+        <h1>Goppy AI</h1>
+        <p>Asisten AI cerdas untuk belajar, membuat, dan berkreasi</p>
+      </div>
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-tab="login">Masuk</button>
+        <button class="auth-tab" data-tab="register">Daftar</button>
+      </div>
+
+      <div class="auth-error" id="auth-error"></div>
+
+      <!-- Login Form -->
+      <div id="login-form">
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" id="login-username" placeholder="Masukkan username" autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="login-password" placeholder="Masukkan password" autocomplete="current-password">
+        </div>
+        <button class="auth-btn" onclick="handleLogin()">Masuk ke Goppy AI</button>
+      </div>
+
+      <!-- Register Form -->
+      <div id="register-form" style="display:none;">
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" id="reg-username" placeholder="Pilih username" autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="reg-password" placeholder="Buat password" autocomplete="new-password">
+        </div>
+        <div class="form-group">
+          <label>Konfirmasi Password</label>
+          <input type="password" id="reg-password2" placeholder="Ulangi password" autocomplete="new-password">
+        </div>
+        <button class="auth-btn" onclick="handleRegister()">Daftar Akun Baru</button>
+      </div>
+
+      <div class="auth-hint">
+        Akun disimpan secara lokal di browser Anda
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== MAIN APP ========== -->
+  <div id="app">
+    <div class="header">
+      <div class="header-left">
+        <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+        <span class="logo-text">🤖 Goppy AI</span>
+      </div>
+      <div class="header-right">
+        <button class="header-btn" onclick="openSettings()" title="Pengaturan">⚙️ Pengaturan</button>
+        <div class="user-badge">
+          <div class="avatar" id="user-avatar">U</div>
+          <span id="user-display-name">User</span>
+        </div>
+        <button class="header-btn" onclick="handleLogout()">Keluar</button>
+      </div>
+    </div>
+
+    <div class="main-layout">
+      <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+      
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <button class="new-chat-btn" onclick="newChat()">
+            ✨ Chat Baru
+          </button>
+        </div>
+
+        <div class="mode-selector">
+          <label>Mode AI</label>
+          <div class="mode-grid">
+            <button class="mode-btn active" data-mode="chat" onclick="setMode('chat')">💬 Chat</button>
+            <button class="mode-btn" data-mode="belajar" onclick="setMode('belajar')">📚 Belajar</button>
+            <button class="mode-btn" data-mode="coding" onclick="setMode('coding')">💻 Coding</button>
+            <button class="mode-btn" data-mode="kreatif" onclick="setMode('kreatif')">🎨 Kreatif</button>
+            <button class="mode-btn" data-mode="analisis" onclick="setMode('analisis')">📊 Analisis</button>
+            <button class="mode-btn" data-mode="terjemah" onclick="setMode('terjemah')">🌐 Terjemah</button>
+          </div>
+        </div>
+
+        <div class="history-list" id="history-list">
+          <h3>Riwayat Chat</h3>
+          <div id="history-items"></div>
+        </div>
+
+        <div class="sidebar-footer">
+          <button onclick="clearAllHistory()">🗑️ Hapus Semua Riwayat</button>
+        </div>
+      </aside>
+
+      <main class="chat-area">
+        <div class="chat-messages" id="chat-messages">
+          <div class="welcome-screen" id="welcome-screen">
+            <div class="big-icon">🤖</div>
+            <h2>Halo, saya Goppy AI!</h2>
+            <p>Asisten AI yang siap membantu kamu belajar, coding, berkreasi, menganalisis, dan banyak lagi. Pilih saran di bawah atau langsung ketik pertanyaanmu!</p>
+            <div class="suggestion-grid">
+              <div class="suggestion-card" onclick="useSuggestion('Jelaskan konsep machine learning dengan cara yang mudah dipahami untuk pemula')">
+                <div class="icon">📚</div>
+                <div class="title">Belajar ML</div>
+                <div class="desc">Jelaskan machine learning untuk pemula</div>
+              </div>
+              <div class="suggestion-card" onclick="useSuggestion('Buatkan saya kode Python untuk membuat chatbot sederhana menggunakan OpenAI API')">
+                <div class="icon">💻</div>
+                <div class="title">Coding Helper</div>
+                <div class="desc">Buat kode chatbot Python</div>
+              </div>
+              <div class="suggestion-card" onclick="useSuggestion('Tuliskan cerita pendek tentang petualangan AI di masa depan yang penuh harapan')">
+                <div class="icon">🎨</div>
+                <div class="title">Kreatif</div>
+                <div class="desc">Cerita pendek tentang AI</div>
+              </div>
+              <div class="suggestion-card" onclick="useSuggestion('Analisis kelebihan dan kekurangan framework React vs Vue.js untuk proyek web modern')">
+                <div class="icon">📊</div>
+                <div class="title">Analisis</div>
+                <div class="desc">Bandingkan React vs Vue</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="input-area">
+          <div class="input-wrapper">
+            <div class="input-box">
+              <textarea id="user-input" rows="1" placeholder="Ketik pesanmu di sini... (Enter untuk kirim, Shift+Enter baris baru)" onkeydown="handleKeyDown(event)" oninput="autoResize(this)"></textarea>
+              <button class="send-btn" id="send-btn" onclick="sendMessage()" title="Kirim">➤</button>
+            </div>
+            <div class="input-hint">
+              Goppy AI dapat membuat kesalahan. Selalu verifikasi informasi penting.
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="modal-overlay" id="settings-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>⚙️ Pengaturan</h3>
+        <button class="modal-close" onclick="closeSettings()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="settings-section">
+          <h4>Model AI</h4>
+          <div class="form-group">
+            <label>Model Gemini</label>
+            <select id="model-select" style="width:100%;padding:10px;background:var(--bg-tertiary);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:14px;">
+              <option value="gemini-3.6-flash" selected>Gemini 3.6 Flash (Cepat & Cerdas)</option>
+              <option value="gemini-3.7-flash">Gemini 3.7 Flash (Terbaru)</option>
+              <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+              <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+              <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+            </select>
+          </div>
+        </div>
+        <div class="settings-section">
+          <h4>Preferensi</h4>
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="stream-toggle" checked style="margin-right:8px;">
+              Tampilkan respons secara streaming (jika tersedia)
+            </label>
+          </div>
+        </div>
+        <div class="settings-section" id="owner-section" style="display:none;">
+          <h4>🔑 Panel Owner (Tersembunyi)</h4>
+          <div id="api-status-box" class="api-status missing">
+            ⚠️ API Key Gemini belum diatur
+          </div>
+          <div class="form-group">
+            <label>Gemini API Key</label>
+            <input type="password" id="gemini-api-key" placeholder="Masukkan API Key dari Google AI Studio">
+          </div>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">
+            Dapatkan API Key gratis di <a href="https://aistudio.google.com/apikey" target="_blank" style="color:var(--accent);">Google AI Studio</a>. 
+            Key disimpan secara lokal di browser ini.
+          </p>
+          <button class="btn btn-primary" onclick="saveApiKey()" style="width:100%;">💾 Simpan API Key</button>
+          <button class="btn btn-danger" onclick="clearApiKey()" style="width:100%;margin-top:8px;">Hapus API Key</button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeSettings()">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ========== STATE ==========
+    let currentUser = null;
+    let currentMode = 'chat';
+    let currentChatId = null;
+    let chats = {}; // { id: { title, messages: [], mode, createdAt } }
+    let isGenerating = false;
+
+    const MODE_PROMPTS = {
+      chat: 'Kamu adalah Goppy AI, asisten AI yang ramah, cerdas, dan helpful. Jawab dalam bahasa Indonesia kecuali diminta sebaliknya. Berikan jawaban yang jelas, akurat, dan berguna.',
+      belajar: 'Kamu adalah Goppy AI dalam mode Belajar. Kamu adalah tutor yang sabar dan jelas. Jelaskan konsep dengan bahasa sederhana, berikan analogi, contoh, dan langkah-langkah. Ajukan pertanyaan untuk memastikan pemahaman. Jawab dalam bahasa Indonesia.',
+      coding: 'Kamu adalah Goppy AI dalam mode Coding. Kamu adalah programmer expert. Berikan kode yang bersih, efisien, dan well-commented. Jelaskan logika kode. Jika ada error, bantu debug. Gunakan best practices. Jawab dalam bahasa Indonesia kecuali untuk kode.',
+      kreatif: 'Kamu adalah Goppy AI dalam mode Kreatif. Kamu adalah penulis dan seniman kreatif. Bantu user membuat cerita, puisi, ide konten, brainstorming, atau karya kreatif lainnya. Jadilah imajinatif dan inspiratif. Jawab dalam bahasa Indonesia.',
+      analisis: 'Kamu adalah Goppy AI dalam mode Analisis. Berikan analisis yang mendalam, objektif, dan berbasis data. Bandingkan opsi, sebutkan pro-kontra, dan berikan rekomendasi yang masuk akal. Jawab dalam bahasa Indonesia.',
+      terjemah: 'Kamu adalah Goppy AI dalam mode Terjemah. Terjemahkan teks dengan akurat sambil menjaga nuansa dan konteks. Jika diminta, jelaskan pilihan kata. Default: deteksi bahasa sumber dan terjemahkan ke bahasa yang diminta user.'
+    };
+
+    // ========== INIT ==========
+    document.addEventListener('DOMContentLoaded', () => {
+      // Auth tabs
+      document.querySelectorAll('.auth-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          const isLogin = tab.dataset.tab === 'login';
+          document.getElementById('login-form').style.display = isLogin ? 'block' : 'none';
+          document.getElementById('register-form').style.display = isLogin ? 'none' : 'block';
+          document.getElementById('auth-error').style.display = 'none';
+        });
+      });
+
+      // Check existing session
+      const session = localStorage.getItem('goppy_session');
+      if (session) {
+        try {
+          currentUser = JSON.parse(session);
+          showApp();
+        } catch(e) {
+          localStorage.removeItem('goppy_session');
+        }
+      }
+
+      // Load chats
+      loadChats();
+
+      // Enter key on auth
+      document.getElementById('login-password').addEventListener('keydown', e => {
+        if (e.key === 'Enter') handleLogin();
+      });
+      document.getElementById('reg-password2').addEventListener('keydown', e => {
+        if (e.key === 'Enter') handleRegister();
+      });
+    });
+
+    // ========== AUTH ==========
+    function getUsers() {
+      return JSON.parse(localStorage.getItem('goppy_users') || '{}');
+    }
+
+    function saveUsers(users) {
+      localStorage.setItem('goppy_users', JSON.stringify(users));
+    }
+
+    function showAuthError(msg) {
+      const el = document.getElementById('auth-error');
+      el.textContent = msg;
+      el.style.display = 'block';
+    }
+
+    function handleRegister() {
+      const username = document.getElementById('reg-username').value.trim();
+      const pass = document.getElementById('reg-password').value;
+      const pass2 = document.getElementById('reg-password2').value;
+
+      if (!username || username.length < 3) {
+        showAuthError('Username minimal 3 karakter');
+        return;
+      }
+      if (!pass || pass.length < 4) {
+        showAuthError('Password minimal 4 karakter');
+        return;
+      }
+      if (pass !== pass2) {
+        showAuthError('Password tidak cocok');
+        return;
+      }
+
+      const users = getUsers();
+      if (users[username]) {
+        showAuthError('Username sudah digunakan');
+        return;
+      }
+
+      // Create user (simple hash simulation)
+      users[username] = {
+        password: btoa(pass), // base64, not secure but ok for demo
+        isOwner: username.toLowerCase() === 'owner',
+        createdAt: Date.now()
+      };
+      saveUsers(users);
+
+      // Auto login
+      currentUser = { username, isOwner: users[username].isOwner };
+      localStorage.setItem('goppy_session', JSON.stringify(currentUser));
+      showApp();
+      showToast('Akun berhasil dibuat! Selamat datang 🎉');
+    }
+
+    function handleLogin() {
+      const username = document.getElementById('login-username').value.trim();
+      const pass = document.getElementById('login-password').value;
+
+      if (!username || !pass) {
+        showAuthError('Isi username dan password');
+        return;
+      }
+
+      const users = getUsers();
+      const user = users[username];
+
+      // Special hidden owner account (auto-create if not exists)
+      if (username.toLowerCase() === 'owner' && pass === 'goppy2024owner') {
+        if (!user) {
+          users['owner'] = {
+            password: btoa('goppy2024owner'),
+            isOwner: true,
+            createdAt: Date.now()
+          };
+          saveUsers(users);
+        }
+        currentUser = { username: 'owner', isOwner: true };
+        localStorage.setItem('goppy_session', JSON.stringify(currentUser));
+        showApp();
+        showToast('Selamat datang, Owner! 🔑');
+        return;
+      }
+
+      if (!user || user.password !== btoa(pass)) {
+        showAuthError('Username atau password salah');
+        return;
+      }
+
+      currentUser = { username, isOwner: !!user.isOwner };
+      localStorage.setItem('goppy_session', JSON.stringify(currentUser));
+      showApp();
+      showToast(`Selamat datang kembali, ${username}!`);
+    }
+
+    function handleLogout() {
+      localStorage.removeItem('goppy_session');
+      currentUser = null;
+      document.getElementById('app').style.display = 'none';
+      document.getElementById('auth-screen').style.display = 'flex';
+      document.getElementById('login-username').value = '';
+      document.getElementById('login-password').value = '';
+    }
+
+    function showApp() {
+      document.getElementById('auth-screen').style.display = 'none';
+      document.getElementById('app').style.display = 'flex';
+      document.getElementById('user-display-name').textContent = currentUser.username;
+      document.getElementById('user-avatar').textContent = currentUser.username.charAt(0).toUpperCase();
+
+      // Show owner section if owner
+      if (currentUser.isOwner) {
+        document.getElementById('owner-section').style.display = 'block';
+      } else {
+        document.getElementById('owner-section').style.display = 'none';
+      }
+
+      updateApiStatus();
+      renderHistory();
+      if (!currentChatId) {
+        showWelcome();
+      }
+    }
+
+    // ========== CHAT MANAGEMENT ==========
+    function loadChats() {
+      const key = `goppy_chats_${currentUser ? currentUser.username : 'guest'}`;
+      chats = JSON.parse(localStorage.getItem(key) || '{}');
+    }
+
+    function saveChats() {
+      if (!currentUser) return;
+      const key = `goppy_chats_${currentUser.username}`;
+      localStorage.setItem(key, JSON.stringify(chats));
+    }
+
+    function generateId() {
+      return 'chat_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+    }
+
+    function newChat() {
+      currentChatId = null;
+      document.getElementById('chat-messages').innerHTML = '';
+      showWelcome();
+      document.querySelectorAll('.history-item').forEach(el => el.classList.remove('active'));
+      if (window.innerWidth <= 768) toggleSidebar();
+    }
+
+    function showWelcome() {
+      document.getElementById('chat-messages').innerHTML = `
+        <div class="welcome-screen" id="welcome-screen">
+          <div class="big-icon">🤖</div>
+          <h2>Halo, saya Goppy AI!</h2>
+          <p>Asisten AI yang siap membantu kamu belajar, coding, berkreasi, menganalisis, dan banyak lagi. Pilih saran di bawah atau langsung ketik pertanyaanmu!</p>
+          <div class="suggestion-grid">
+            <div class="suggestion-card" onclick="useSuggestion('Jelaskan konsep machine learning dengan cara yang mudah dipahami untuk pemula')">
+              <div class="icon">📚</div>
+              <div class="title">Belajar ML</div>
+              <div class="desc">Jelaskan machine learning untuk pemula</div>
+            </div>
+            <div class="suggestion-card" onclick="useSuggestion('Buatkan saya kode Python untuk membuat chatbot sederhana')">
+              <div class="icon">💻</div>
+              <div class="title">Coding Helper</div>
+              <div class="desc">Buat kode chatbot Python</div>
+            </div>
+            <div class="suggestion-card" onclick="useSuggestion('Tuliskan cerita pendek tentang petualangan AI di masa depan yang penuh harapan')">
+              <div class="icon">🎨</div>
+              <div class="title">Kreatif</div>
+              <div class="desc">Cerita pendek tentang AI</div>
+            </div>
+            <div class="suggestion-card" onclick="useSuggestion('Analisis kelebihan dan kekurangan framework React vs Vue.js')">
+              <div class="icon">📊</div>
+              <div class="title">Analisis</div>
+              <div class="desc">Bandingkan React vs Vue</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function useSuggestion(text) {
+      document.getElementById('user-input').value = text;
+      autoResize(document.getElementById('user-input'));
+      sendMessage();
+    }
+
+    function setMode(mode) {
+      currentMode = mode;
+      document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.mode === mode);
+      });
+      showToast(`Mode: ${mode.charAt(0).toUpperCase() + mode.slice(1)}`);
+    }
+
+    function renderHistory() {
+      const container = document.getElementById('history-items');
+      const sorted = Object.entries(chats).sort((a, b) => b[1].createdAt - a[1].createdAt);
+
+      if (sorted.length === 0) {
+        container.innerHTML = '<p style="font-size:13px;color:var(--text-muted);padding:8px;">Belum ada riwayat</p>';
+        return;
+      }
+
+      container.innerHTML = sorted.map(([id, chat]) => `
+        <div class="history-item ${id === currentChatId ? 'active' : ''}" onclick="loadChat('${id}')">
+          <span class="title">${escapeHtml(chat.title || 'Chat tanpa judul')}</span>
+          <button class="delete-btn" onclick="event.stopPropagation(); deleteChat('${id}')" title="Hapus">🗑</button>
+        </div>
+      `).join('');
+    }
+
+    function loadChat(id) {
+      currentChatId = id;
+      const chat = chats[id];
+      if (!chat) return;
+
+      currentMode = chat.mode || 'chat';
+      document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.mode === currentMode);
+      });
+
+      const container = document.getElementById('chat-messages');
+      container.innerHTML = '';
+
+      chat.messages.forEach(msg => {
+        appendMessage(msg.role, msg.content, false);
+      });
+
+      renderHistory();
+      if (window.innerWidth <= 768) toggleSidebar();
+      scrollToBottom();
+    }
+
+    function deleteChat(id) {
+      if (!confirm('Hapus chat ini?')) return;
+      delete chats[id];
+      saveChats();
+      if (currentChatId === id) newChat();
+      renderHistory();
+      showToast('Chat dihapus');
+    }
+
+    function clearAllHistory() {
+      if (!confirm('Hapus SEMUA riwayat chat? Tindakan ini tidak bisa dibatalkan.')) return;
+      chats = {};
+      saveChats();
+      newChat();
+      renderHistory();
+      showToast('Semua riwayat dihapus');
+    }
+
+    // ========== MESSAGING ==========
+    function handleKeyDown(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    }
+
+    function autoResize(el) {
+      el.style.height = 'auto';
+      el.style.height = Math.min(el.scrollHeight, 160) + 'px';
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById('user-input');
+      const text = input.value.trim();
+      if (!text || isGenerating) return;
+
+      // Check API key
+      const apiKey = localStorage.getItem('goppy_gemini_key');
+      if (!apiKey) {
+        showToast('⚠️ API Key Gemini belum diatur. Login sebagai Owner untuk mengatur.');
+        if (currentUser && currentUser.isOwner) {
+          openSettings();
+        }
+        return;
+      }
+
+      // Hide welcome
+      const welcome = document.getElementById('welcome-screen');
+      if (welcome) welcome.remove();
+
+      // Create chat if needed
+      if (!currentChatId) {
+        currentChatId = generateId();
+        chats[currentChatId] = {
+          title: text.slice(0, 40) + (text.length > 40 ? '...' : ''),
+          messages: [],
+          mode: currentMode,
+          createdAt: Date.now()
+        };
+      }
+
+      // Add user message
+      chats[currentChatId].messages.push({ role: 'user', content: text });
+      appendMessage('user', text);
+      input.value = '';
+      autoResize(input);
+      saveChats();
+      renderHistory();
+
+      // Generate response
+      isGenerating = true;
+      document.getElementById('send-btn').disabled = true;
+
+      const typingId = showTyping();
+
+      try {
+        const response = await callGemini(text, apiKey);
+        removeTyping(typingId);
+        chats[currentChatId].messages.push({ role: 'assistant', content: response });
+        appendMessage('assistant', response);
+        saveChats();
+      } catch (err) {
+        removeTyping(typingId);
+        const errMsg = `❌ Error: ${err.message || 'Gagal mendapatkan respons dari Gemini'}`;
+        chats[currentChatId].messages.push({ role: 'assistant', content: errMsg });
+        appendMessage('assistant', errMsg);
+        saveChats();
+      }
+
+      isGenerating = false;
+      document.getElementById('send-btn').disabled = false;
+      document.getElementById('user-input').focus();
+    }
+
+    function appendMessage(role, content, animate = true) {
+      const container = document.getElementById('chat-messages');
+      const div = document.createElement('div');
+      div.className = `message ${role}`;
+      if (!animate) div.style.animation = 'none';
+
+      const avatar = role === 'user' ? '👤' : '🤖';
+      const name = role === 'user' ? currentUser.username : 'Goppy AI';
+
+      let htmlContent;
+      if (role === 'assistant') {
+        htmlContent = DOMPurify.sanitize(marked.parse(content));
+      } else {
+        htmlContent = escapeHtml(content).replace(/\n/g, '<br>');
+      }
+
+      div.innerHTML = `
+        <div class="avatar">${avatar}</div>
+        <div class="content">
+          <div class="role-name">${name}</div>
+          <div class="bubble">${htmlContent}</div>
+          ${role === 'assistant' ? `
+            <div class="message-actions">
+              <button class="msg-action-btn" onclick="copyMessage(this)">📋 Salin</button>
+              <button class="msg-action-btn" onclick="regenerateLast()">🔄 Regenerasi</button>
+            </div>
+          ` : ''}
+        </div>
+      `;
+      container.appendChild(div);
+      scrollToBottom();
+    }
+
+    function showTyping() {
+      const container = document.getElementById('chat-messages');
+      const div = document.createElement('div');
+      div.className = 'message assistant';
+      div.id = 'typing-indicator';
+      div.innerHTML = `
+        <div class="avatar">🤖</div>
+        <div class="content">
+          <div class="role-name">Goppy AI</div>
+          <div class="bubble">
+            <div class="typing-indicator">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+        </div>
+      `;
+      container.appendChild(div);
+      scrollToBottom();
+      return 'typing-indicator';
+    }
+
+    function removeTyping(id) {
+      const el = document.getElementById(id);
+      if (el) el.remove();
+    }
+
+    function scrollToBottom() {
+      const container = document.getElementById('chat-messages');
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function copyMessage(btn) {
+      const bubble = btn.closest('.content').querySelector('.bubble');
+      const text = bubble.innerText;
+      navigator.clipboard.writeText(text).then(() => showToast('Disalin ke clipboard!'));
+    }
+
+    async function regenerateLast() {
+      if (!currentChatId || isGenerating) return;
+      const chat = chats[currentChatId];
+      if (!chat || chat.messages.length < 2) return;
+
+      // Remove last assistant message
+      if (chat.messages[chat.messages.length - 1].role === 'assistant') {
+        chat.messages.pop();
+      }
+
+      // Re-render
+      const container = document.getElementById('chat-messages');
+      container.innerHTML = '';
+      chat.messages.forEach(msg => appendMessage(msg.role, msg.content, false));
+
+      // Get last user message
+      const lastUser = [...chat.messages].reverse().find(m => m.role === 'user');
+      if (!lastUser) return;
+
+      const apiKey = localStorage.getItem('goppy_gemini_key');
+      if (!apiKey) {
+        showToast('API Key belum diatur');
+        return;
+      }
+
+      isGenerating = true;
+      document.getElementById('send-btn').disabled = true;
+      const typingId = showTyping();
+
+      try {
+        const response = await callGemini(lastUser.content, apiKey);
+        removeTyping(typingId);
+        chat.messages.push({ role: 'assistant', content: response });
+        appendMessage('assistant', response);
+        saveChats();
+      } catch (err) {
+        removeTyping(typingId);
+        const errMsg = `❌ Error: ${err.message}`;
+        chat.messages.push({ role: 'assistant', content: errMsg });
+        appendMessage('assistant', errMsg);
+        saveChats();
+      }
+
+      isGenerating = false;
+      document.getElementById('send-btn').disabled = false;
+    }
+
+    // ========== GEMINI API ==========
+    async function callGemini(userMessage, apiKey) {
+      const model = document.getElementById('model-select')?.value || 'gemini-3.6-flash';
+      const systemPrompt = MODE_PROMPTS[currentMode] || MODE_PROMPTS.chat;
+
+      // Build conversation history
+      const history = [];
+      if (currentChatId && chats[currentChatId]) {
+        const msgs = chats[currentChatId].messages.slice(0, -1); // exclude the just-added user msg
+        for (const m of msgs) {
+          history.push({
+            role: m.role === 'assistant' ? 'model' : 'user',
+            parts: [{ text: m.content }]
+          });
+        }
+      }
+
+      // Add current user message
+      history.push({
+        role: 'user',
+        parts: [{ text: userMessage }]
+      });
+
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
+      const body = {
+        contents: history,
+        systemInstruction: {
+          parts: [{ text: systemPrompt }]
+        },
+        generationConfig: {
+          temperature: currentMode === 'kreatif' ? 0.9 : 0.7,
+          topP: 0.95,
+          maxOutputTokens: 4096
+        }
+      };
+
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        const msg = errData.error?.message || `HTTP ${res.status}`;
+        throw new Error(msg);
+      }
+
+      const data = await res.json();
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!text) throw new Error('Respons kosong dari model');
+      return text;
+    }
+
+    // ========== SETTINGS & OWNER ==========
+    function openSettings() {
+      updateApiStatus();
+      const key = localStorage.getItem('goppy_gemini_key') || '';
+      document.getElementById('gemini-api-key').value = key;
+      document.getElementById('settings-modal').classList.add('show');
+    }
+
+    function closeSettings() {
+      document.getElementById('settings-modal').classList.remove('show');
+    }
+
+    function updateApiStatus() {
+      const key = localStorage.getItem('goppy_gemini_key');
+      const box = document.getElementById('api-status-box');
+      if (!box) return;
+      if (key) {
+        box.className = 'api-status ok';
+        box.innerHTML = '✅ API Key Gemini sudah diatur';
+      } else {
+        box.className = 'api-status missing';
+        box.innerHTML = '⚠️ API Key Gemini belum diatur';
+      }
+    }
+
+    function saveApiKey() {
+      const key = document.getElementById('gemini-api-key').value.trim();
+      if (!key) {
+        showToast('Masukkan API Key terlebih dahulu');
+        return;
+      }
+      if (!key.startsWith('AIza')) {
+        showToast('Format API Key Gemini biasanya dimulai dengan "AIza"');
+        // still allow
+      }
+      localStorage.setItem('goppy_gemini_key', key);
+      updateApiStatus();
+      showToast('API Key berhasil disimpan! ✅');
+    }
+
+    function clearApiKey() {
+      if (!confirm('Hapus API Key?')) return;
+      localStorage.removeItem('goppy_gemini_key');
+      document.getElementById('gemini-api-key').value = '';
+      updateApiStatus();
+      showToast('API Key dihapus');
+    }
+
+    // ========== UTILS ==========
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+      document.getElementById('sidebar-overlay').classList.toggle('show');
+    }
+
+    function showToast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 3000);
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Close modal on outside click
+    document.getElementById('settings-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'settings-modal') closeSettings();
+    });
+  </script>
+</body>
+</html>
