@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GOPPY AI · Google Gemini (AQ Support)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #0b0000;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Orbitron', sans-serif;
+      padding: 1.5rem;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at 30% 40%, rgba(255, 20, 20, 0.15) 0%, transparent 60%),
+                  radial-gradient(circle at 80% 70%, rgba(255, 0, 0, 0.20) 0%, transparent 50%),
+                  radial-gradient(circle at 20% 80%, rgba(200, 0, 0, 0.10) 0%, transparent 40%);
+      z-index: 0;
+      pointer-events: none;
+      animation: pulseGlow 4s ease-in-out infinite alternate;
+    }
+
+    @keyframes pulseGlow {
+      0% { opacity: 0.7; transform: scale(1); }
+      100% { opacity: 1; transform: scale(1.05); }
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: 
+        linear-gradient(rgba(255, 0, 0, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 0, 0, 0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .cyber-card {
+      position: relative;
+      z-index: 10;
+      max-width: 1000px;
+      width: 100%;
+      background: rgba(20, 0, 0, 0.65);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 2px solid rgba(255, 30, 30, 0.6);
+      border-radius: 3.5rem 1rem 3.5rem 1rem;
+      padding: 2rem 2rem 1.8rem;
+      box-shadow: 0 0 40px rgba(255, 0, 0, 0.3), 0 0 80px rgba(200, 0, 0, 0.2), inset 0 0 30px rgba(255, 0, 0, 0.1);
+      transition: box-shadow 0.3s ease;
+      animation: cardFloat 6s ease-in-out infinite alternate;
+      display: flex;
+      flex-direction: column;
+      height: 90vh;
+      max-height: 750px;
+    }
+
+    @keyframes cardFloat {
+      0% { transform: translateY(0px); }
+      100% { transform: translateY(-6px); }
+    }
+
+    .cyber-card:hover {
+      box-shadow: 0 0 60px rgba(255, 0, 0, 0.6), 0 0 120px rgba(200, 0, 0, 0.3), inset 0 0 40px rgba(255, 0, 0, 0.2);
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+      border-bottom: 1px solid rgba(255, 40, 40, 0.3);
+      padding-bottom: 0.8rem;
+      margin-bottom: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    .logo-icon {
+      font-size: 2rem;
+      color: #ff2222;
+      text-shadow: 0 0 20px #ff0000, 0 0 40px #aa0000;
+      animation: flicker 3s infinite alternate;
+    }
+
+    @keyframes flicker {
+      0% { opacity: 0.9; text-shadow: 0 0 10px #ff2222, 0 0 30px #aa0000; }
+      50% { opacity: 1; text-shadow: 0 0 20px #ff4444, 0 0 60px #cc0000, 0 0 80px #880000; }
+      100% { opacity: 0.95; text-shadow: 0 0 15px #ff2222, 0 0 45px #cc0000; }
+    }
+
+    .brand {
+      font-size: 2rem;
+      font-weight: 900;
+      letter-spacing: 3px;
+      background: linear-gradient(180deg, #ff3333, #ff6666, #ff1111);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 0 0 30px rgba(255, 0, 0, 0.7);
+      animation: textPulse 2.5s infinite alternate;
+    }
+
+    @keyframes textPulse {
+      0% { text-shadow: 0 0 10px #ff0000, 0 0 20px #aa0000; opacity: 0.9; }
+      100% { text-shadow: 0 0 30px #ff4444, 0 0 70px #cc0000, 0 0 100px #880000; opacity: 1; }
+    }
+
+    .status-badge {
+      background: rgba(255, 0, 0, 0.15);
+      border: 1px solid #ff3333;
+      border-radius: 40px;
+      padding: 0.4rem 1.2rem;
+      color: #ff8888;
+      font-size: 0.7rem;
+      letter-spacing: 2px;
+      backdrop-filter: blur(4px);
+      box-shadow: 0 0 15px rgba(255, 0, 0, 0.2);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: #ff2222;
+      border-radius: 50%;
+      box-shadow: 0 0 15px #ff0000;
+      animation: dotBlink 1.2s infinite;
+    }
+
+    @keyframes dotBlink {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.3; transform: scale(0.7); }
+    }
+
+    .chat-container {
+      flex: 1;
+      overflow-y: auto;
+      padding-right: 6px;
+      margin-bottom: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      scroll-behavior: smooth;
+      scrollbar-width: thin;
+      scrollbar-color: #aa2222 #1a0505;
+    }
+
+    .chat-container::-webkit-scrollbar {
+      width: 6px;
+    }
+    .chat-container::-webkit-scrollbar-track {
+      background: #1a0505;
+      border-radius: 10px;
+    }
+    .chat-container::-webkit-scrollbar-thumb {
+      background: #aa2222;
+      border-radius: 10px;
+      box-shadow: 0 0 15px #ff0000;
+    }
+
+    .message {
+      display: flex;
+      gap: 0.8rem;
+      align-items: flex-start;
+      animation: messageSlide 0.4s ease-out;
+    }
+
+    @keyframes messageSlide {
+      0% { opacity: 0; transform: translateY(12px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    .message-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #1a0505;
+      border: 1px solid #ff3333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ff4444;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+      box-shadow: 0 0 20px rgba(255, 0, 0, 0.15);
+    }
+
+    .message-content {
+      background: rgba(30, 0, 0, 0.55);
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(255, 50, 50, 0.25);
+      border-radius: 1.2rem 1.2rem 1.2rem 0.3rem;
+      padding: 0.8rem 1.2rem;
+      max-width: 80%;
+      color: #ffcccc;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      letter-spacing: 0.5px;
+      box-shadow: 0 0 10px rgba(255, 0, 0, 0.05);
+      word-break: break-word;
+    }
+
+    .message.user {
+      flex-direction: row-reverse;
+    }
+
+    .message.user .message-content {
+      background: rgba(50, 0, 0, 0.7);
+      border-color: #ff5555;
+      border-radius: 1.2rem 1.2rem 0.3rem 1.2rem;
+      color: #ffdddd;
+      box-shadow: 0 0 20px rgba(255, 0, 0, 0.1);
+    }
+
+    .message.user .message-avatar {
+      background: #2a0505;
+      border-color: #ff6666;
+      color: #ff6666;
+    }
+
+    .message .timestamp {
+      font-size: 0.6rem;
+      opacity: 0.5;
+      margin-top: 4px;
+      color: #ff8888;
+      letter-spacing: 1px;
+    }
+
+    .typing-indicator {
+      display: flex;
+      gap: 0.5rem;
+      padding: 0.6rem 1.2rem;
+      background: rgba(30, 0, 0, 0.4);
+      border-radius: 2rem;
+      border: 1px solid rgba(255, 50, 50, 0.2);
+      align-items: center;
+      width: fit-content;
+      animation: messageSlide 0.3s ease-out;
+    }
+
+    .typing-indicator span {
+      width: 10px;
+      height: 10px;
+      background: #ff3333;
+      border-radius: 50%;
+      display: inline-block;
+      animation: typingBounce 1.4s infinite;
+      box-shadow: 0 0 15px #ff0000;
+    }
+
+    .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typingBounce {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+      30% { transform: translateY(-10px); opacity: 1; }
+    }
+
+    .input-area {
+      display: flex;
+      gap: 0.8rem;
+      align-items: center;
+      border-top: 1px solid rgba(255, 40, 40, 0.25);
+      padding-top: 1rem;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+
+    .input-area input {
+      flex: 1;
+      background: rgba(10, 0, 0, 0.7);
+      border: 1px solid #aa2222;
+      border-radius: 3rem;
+      padding: 0.9rem 1.5rem;
+      color: #ffcccc;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 1px;
+      outline: none;
+      transition: all 0.3s ease;
+      box-shadow: inset 0 0 20px rgba(255, 0, 0, 0.05);
+      min-width: 140px;
+    }
+
+    .input-area input:focus {
+      border-color: #ff5555;
+      box-shadow: 0 0 30px rgba(255, 0, 0, 0.2), inset 0 0 30px rgba(255, 0, 0, 0.1);
+    }
+
+    .input-area input::placeholder {
+      color: #aa5555;
+      font-weight: 400;
+    }
+
+    .btn-send {
+      background: #cc1111;
+      border: none;
+      border-radius: 50%;
+      width: 54px;
+      height: 54px;
+      color: #0b0000;
+      font-size: 1.5rem;
+      cursor: pointer;
+      box-shadow: 0 0 30px #ff0000;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #ff5555;
+    }
+
+    .btn-send:hover {
+      background: #ff3333;
+      transform: scale(1.05);
+      box-shadow: 0 0 60px #ff4444;
+    }
+
+    .btn-send:active {
+      transform: scale(0.95);
+    }
+
+    .api-key-area {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      border-top: 1px solid rgba(255, 40, 40, 0.15);
+      padding-top: 10px;
+    }
+
+    .api-key-area .label {
+      color: #aa5555;
+      font-size: 0.6rem;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .api-key-area input[type="password"] {
+      background: rgba(10, 0, 0, 0.6);
+      border: 1px solid #661111;
+      border-radius: 30px;
+      padding: 0.3rem 1rem;
+      color: #ff9999;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.6rem;
+      letter-spacing: 1px;
+      outline: none;
+      width: 220px;
+      transition: 0.3s;
+    }
+
+    .api-key-area input[type="password"]:focus {
+      border-color: #ff4444;
+      box-shadow: 0 0 20px rgba(255, 0, 0, 0.2);
+    }
+
+    .api-key-area input[type="password"]::placeholder {
+      color: #883333;
+      font-weight: 300;
+    }
+
+    .api-key-area select {
+      background: rgba(10, 0, 0, 0.6);
+      border: 1px solid #661111;
+      border-radius: 30px;
+      padding: 0.3rem 0.8rem;
+      color: #ff9999;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.55rem;
+      letter-spacing: 1px;
+      outline: none;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .api-key-area select:focus {
+      border-color: #ff4444;
+      box-shadow: 0 0 20px rgba(255, 0, 0, 0.2);
+    }
+
+    .api-key-area select option {
+      background: #1a0505;
+      color: #ffcccc;
+    }
+
+    .api-key-area .btn-key {
+      background: transparent;
+      border: 1px solid #aa3333;
+      color: #ff7777;
+      border-radius: 30px;
+      padding: 0.3rem 0.9rem;
+      font-size: 0.6rem;
+      font-family: 'Orbitron', sans-serif;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .api-key-area .btn-key:hover {
+      background: #aa2222;
+      color: #0b0000;
+      border-color: #ff6666;
+    }
+
+    .api-key-area .status-text {
+      font-size: 0.55rem;
+      letter-spacing: 1px;
+      color: #aa5555;
+    }
+
+    .glitch-text {
+      color: #ff6666;
+      font-size: 0.65rem;
+      letter-spacing: 2px;
+      opacity: 0.5;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: center;
+      margin-top: 10px;
+      flex-shrink: 0;
+      border-top: 1px dashed rgba(255, 0, 0, 0.15);
+      padding-top: 10px;
+    }
+
+    .glitch-text span {
+      animation: glitch 1.8s infinite alternate;
+    }
+
+    @keyframes glitch {
+      0% { opacity: 0.5; text-shadow: 2px 0 red, -2px 0 #ff6666; }
+      25% { opacity: 0.9; text-shadow: -3px 0 #ff0000, 3px 0 #ff8888; }
+      50% { opacity: 0.7; text-shadow: 4px 0 #ff2222, -4px 0 #ff4444; }
+      100% { opacity: 1; text-shadow: 0px 0 15px #ff0000; }
+    }
+
+    @media (max-width: 600px) {
+      .cyber-card { padding: 1.2rem; height: 92vh; max-height: 700px; }
+      .brand { font-size: 1.6rem; }
+      .message-content { max-width: 90%; font-size: 0.75rem; }
+      .input-area input { font-size: 0.65rem; padding: 0.7rem 1rem; }
+      .btn-send { width: 46px; height: 46px; font-size: 1.2rem; }
+      .api-key-area input[type="password"] { width: 140px; }
+      .api-key-area select { font-size: 0.5rem; padding: 0.2rem 0.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="cyber-card">
+    <!-- HEADER -->
+    <div class="header">
+      <div class="logo-area">
+        <i class="fas fa-robot logo-icon"></i>
+        <h1 class="brand">GOPPY AI</h1>
+      </div>
+      <div class="status-badge">
+        <span class="status-dot"></span>
+        <span id="modelDisplay">Gemini 3.6 Flash</span>
+        <i class="fas fa-bolt" style="color: #ff4444; margin-left: 4px;"></i>
+      </div>
+    </div>
+
+    <!-- CHAT CONTAINER -->
+    <div class="chat-container" id="chatContainer">
+      <div class="message ai">
+        <div class="message-avatar"><i class="fas fa-robot"></i></div>
+        <div class="message-content">
+          <div>Halo, saya <strong style="color:#ff6666;">GOPPY</strong> dengan <span style="color:#ff8888;">Google Gemini</span>. Masukkan API Key (format AQ.xxx) untuk mulai.</div>
+          <div class="timestamp">— 00:00:01</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INPUT AREA -->
+    <div class="input-area">
+      <input type="text" id="chatInput" placeholder="> ketik pesan ..." autofocus>
+      <button class="btn-send" id="sendBtn"><i class="fas fa-paper-plane"></i></button>
+    </div>
+
+    <!-- API Key area (Gemini) -->
+    <div class="api-key-area">
+      <span class="label"><i class="fas fa-star"></i> Gemini</span>
+      <input type="password" id="apiKeyInput" placeholder="AQ.xxx... masukkan API Key" />
+      <select id="modelSelect">
+        <option value="gemini-3.6-flash">3.6 Flash</option>
+        <option value="gemini-2.0-flash">2.0 Flash</option>
+        <option value="gemini-2.0-flash-lite">2.0 Flash Lite</option>
+        <option value="gemini-2.0-pro">2.0 Pro</option>
+        <option value="gemini-1.5-pro">1.5 Pro</option>
+        <option value="gemini-1.5-flash">1.5 Flash</option>
+      </select>
+      <button class="btn-key" id="saveKeyBtn"><i class="fas fa-save"></i> Simpan</button>
+      <span class="status-text" id="keyStatus">⚡</span>
+    </div>
+
+    <!-- GLITCH TEXT -->
+    <div class="glitch-text">
+      <span><i class="fas fa-skull"></i> RED GLITCH</span>
+      <span>•</span>
+      <span>CYBERPUNK 2077</span>
+      <span>•</span>
+      <span><i class="fas fa-code"></i> GOPPY v2.0</span>
+      <span>•</span>
+      <span style="animation: flicker 1.2s infinite;">🔥</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      const chatContainer = document.getElementById('chatContainer');
+      const input = document.getElementById('chatInput');
+      const sendBtn = document.getElementById('sendBtn');
+      const apiKeyInput = document.getElementById('apiKeyInput');
+      const modelSelect = document.getElementById('modelSelect');
+      const modelDisplay = document.getElementById('modelDisplay');
+      const saveKeyBtn = document.getElementById('saveKeyBtn');
+      const keyStatus = document.getElementById('keyStatus');
+
+      // Load saved data
+      let apiKey = localStorage.getItem('goppy_gemini_api_key') || '';
+      let selectedModel = localStorage.getItem('goppy_gemini_model') || 'gemini-3.6-flash';
+
+      if (apiKey) {
+        apiKeyInput.value = apiKey;
+        updateKeyStatus(true);
+      } else {
+        updateKeyStatus(false);
+      }
+
+      modelSelect.value = selectedModel;
+      modelDisplay.textContent = selectedModel.replace('gemini-', '').toUpperCase();
+
+      function updateKeyStatus(isValid) {
+        if (isValid && apiKey) {
+          keyStatus.textContent = '✅ Key siap';
+          keyStatus.style.color = '#66ff66';
+        } else {
+          keyStatus.textContent = '⚠️ Masukkan API Key';
+          keyStatus.style.color = '#ff6666';
+        }
+      }
+
+      // Fungsi validasi API Key (menerima AIza... dan AQ.xxx...)
+      function isValidApiKey(key) {
+        return key && (key.startsWith('AIza') || key.startsWith('AQ.')) && key.length > 15;
+      }
+
+      saveKeyBtn.addEventListener('click', () => {
+        const key = apiKeyInput.value.trim();
+        const model = modelSelect.value;
+        
+        if (isValidApiKey(key)) {
+          localStorage.setItem('goppy_gemini_api_key', key);
+          localStorage.setItem('goppy_gemini_model', model);
+          apiKey = key;
+          selectedModel = model;
+          modelDisplay.textContent = model.replace('gemini-', '').toUpperCase();
+          updateKeyStatus(true);
+          addMessage('✅ API Key Gemini berhasil disimpan. GOPPY siap!', 'ai');
+        } else {
+          keyStatus.textContent = '❌ Key tidak valid (harus AIza... atau AQ.xxx...)';
+          keyStatus.style.color = '#ff4444';
+          setTimeout(() => {
+            updateKeyStatus(!!apiKey);
+          }, 3000);
+        }
+      });
+
+      modelSelect.addEventListener('change', () => {
+        const model = modelSelect.value;
+        localStorage.setItem('goppy_gemini_model', model);
+        selectedModel = model;
+        modelDisplay.textContent = model.replace('gemini-', '').toUpperCase();
+        if (apiKey) {
+          addMessage(`🔄 Model diubah ke: ${model.replace('gemini-', '').toUpperCase()}`, 'ai');
+        }
+      });
+
+      function addMessage(text, sender = 'user') {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${sender}`;
+
+        const avatar = document.createElement('div');
+        avatar.className = 'message-avatar';
+        if (sender === 'ai') {
+          avatar.innerHTML = '<i class="fas fa-robot"></i>';
+        } else {
+          avatar.innerHTML = '<i class="fas fa-user"></i>';
+        }
+
+        const content = document.createElement('div');
+        content.className = 'message-content';
+
+        const textSpan = document.createElement('div');
+        textSpan.textContent = text;
+
+        const timestamp = document.createElement('div');
+        timestamp.className = 'timestamp';
+        const now = new Date();
+        const timeStr = now.toTimeString().slice(0, 8);
+        timestamp.textContent = `— ${timeStr}`;
+
+        content.appendChild(textSpan);
+        content.appendChild(timestamp);
+        messageDiv.appendChild(avatar);
+        messageDiv.appendChild(content);
+
+        const typing = chatContainer.querySelector('.typing-indicator');
+        if (typing) typing.remove();
+
+        chatContainer.appendChild(messageDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }
+
+      function showTyping() {
+        const old = chatContainer.querySelector('.typing-indicator');
+        if (old) old.remove();
+
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'typing-indicator';
+        typingDiv.innerHTML = '<span></span><span></span><span></span>';
+        chatContainer.appendChild(typingDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }
+
+      function removeTyping() {
+        const typing = chatContainer.querySelector('.typing-indicator');
+        if (typing) typing.remove();
+      }
+
+      // ========== CALL GOOGLE GEMINI API ==========
+      async function callGeminiAI(userMessage) {
+        const key = localStorage.getItem('goppy_gemini_api_key');
+        const model = localStorage.getItem('goppy_gemini_model') || 'gemini-3.6-flash';
+
+        if (!key || !isValidApiKey(key)) {
+          throw new Error('API Key Gemini tidak valid atau belum disimpan.');
+        }
+
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{
+                text: `Kamu adalah GOPPY, AI dengan kepribadian cyberpunk bercahaya merah. Respons singkat, padat, dengan sentuhan gaya futuristik dan sedikit dramatis. Gunakan bahasa Indonesia. Pertanyaan: ${userMessage}`
+              }]
+            }],
+            generationConfig: {
+              temperature: 0.7,
+              maxOutputTokens: 300,
+              topP: 0.95
+            }
+          })
+        });
+
+        if (!response.ok) {
+          let errorMsg = `HTTP ${response.status}`;
+          try {
+            const errData = await response.json();
+            if (errData.error && errData.error.message) {
+              errorMsg = errData.error.message;
+            }
+          } catch (e) {}
+          throw new Error(`Gemini error: ${errorMsg}`);
+        }
+
+        const data = await response.json();
+        if (data.candidates && data.candidates.length > 0) {
+          const candidate = data.candidates[0];
+          if (candidate.content && candidate.content.parts && candidate.content.parts.length > 0) {
+            return candidate.content.parts[0].text.trim();
+          }
+        }
+        throw new Error('Tidak ada respons dari Gemini.');
+      }
+
+      async function handleSend() {
+        const raw = input.value.trim();
+        if (raw === '') return;
+
+        const key = localStorage.getItem('goppy_gemini_api_key');
+        if (!key || !isValidApiKey(key)) {
+          addMessage('⚠️ Mohon masukkan API Key Gemini yang valid (AIza... atau AQ.xxx...).', 'ai');
+          input.value = '';
+          input.focus();
+          return;
+        }
+
+        addMessage(raw, 'user');
+        input.value = '';
+        input.focus();
+
+        showTyping();
+
+        try {
+          const reply = await callGeminiAI(raw);
+          removeTyping();
+          addMessage(reply, 'ai');
+        } catch (error) {
+          removeTyping();
+          let errorText = error.message || 'Terjadi kesalahan.';
+          if (errorText.includes('API key') || errorText.includes('403') || errorText.includes('auth')) {
+            errorText = '❌ API Key tidak valid atau expired. Periksa kembali (format AIza... atau AQ.xxx...).';
+          }
+          addMessage(`⚠️ ${errorText}`, 'ai');
+        }
+
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }
+
+      sendBtn.addEventListener('click', handleSend);
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          handleSend();
+        }
+      });
+
+      input.focus();
+
+      setTimeout(() => {
+        if (apiKey) {
+          addMessage(`🔑 API Key Gemini terdeteksi. Model: ${selectedModel.replace('gemini-', '').toUpperCase()}`, 'ai');
+        } else {
+          addMessage('🔐 Masukkan API Key Gemini (format AIza... atau AQ.xxx...) di bawah.', 'ai');
+        }
+      }, 600);
+    })();
+  </script>
+</body>
+</html>
